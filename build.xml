@@ -1,0 +1,51 @@
+<project name="LogFilePlayer" basedir="." default="main">
+    <property name="src.dir"     value="src"/>
+    <property name="lib.dir"     value="lib"/>
+    <property name="build.dir"   value="bin"/>
+    
+    <property name="main-class"   value="LogFilePlayer"/>
+    
+    
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <target name = "clean" >
+        <delete dir="${build.dir}"/>
+        <delete file = "${ant.project.name}.jar"/>
+        <delete file = "MANIFEST.MF"/>
+    </target> 
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+    </target>
+
+   <target name = "jar" depends="compile">
+        <delete file = "${ant.project.name}.jar"/>
+        <delete file = "MANIFEST.MF"/>
+        <manifest file = "MANIFEST.MF">
+            <attribute name = "Main-Class" value = "${main-class}"/>
+            <attribute name = "Class-Path" value = "${classes.dir}/ "/>
+        </manifest>
+        <jar destfile = "${ant.project.name}.jar" basedir = "." includes = "*.class"  manifest = "MANIFEST.MF"/>
+        <!--chmod file="${ant.project.name}.jar" perm="ugo+rx"/-->
+    </target>
+    
+
+    <target name = "run" depends = "jar" >
+        <java fork="true" classname="${main-class}">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${ant.project.name}.jar"/>
+            </classpath>
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
+            <arg value="${arg2}"/>
+        </java>
+    </target> 
+
+
+</project>
