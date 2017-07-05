@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 public class LogFilePlayer {
 	private static String logFilePath = "tempPath";
+	private static boolean debug = false;
 	
 	public static void main(String[] args) {
 		parseCLI(args);
@@ -31,23 +32,23 @@ public class LogFilePlayer {
 		File file = new File(logFilePath);
 		BufferedReader reader = null;
 		
-		TreeMap<Float, Integer> timeMap = new TreeMap<Float, Integer>();
+		TreeMap<Long, Integer> timeMap = new TreeMap<Long, Integer>();
 		ArrayList<DataPoint> data = new  ArrayList<DataPoint>();
 		
 		try {
 			boolean first = true;
-			Float baseTime = (float) 0;
-			Float lastTime = (float) 0;
+			Long baseTime = (long) 0;
+			Long lastTime = (long) 0;
 			reader = new BufferedReader(new FileReader(file));
 		    String text = null;
 		    String lastData = null;
 		    int index = 0;
 		    
-		    Float absoluteTime;
-	    	Float relativeTime;
+		    Long absoluteTime;
+	    	Long relativeTime;
 		    
 		    while ((text = reader.readLine()) != null) {
-		    	Float timeStamp = Float.valueOf(text.split("\\s+")[0]);
+		    	Long timeStamp = Long.valueOf(text.split("\\s+")[0]);
 		    	if (first) {
 		    		baseTime = timeStamp;
 		    		lastTime = timeStamp;
@@ -55,9 +56,10 @@ public class LogFilePlayer {
 		    	}
 		    	absoluteTime = timeStamp - baseTime;
 		    	relativeTime = timeStamp - lastTime;
-		    	
-		    	System.out.println(absoluteTime);
-		    	System.out.println(relativeTime);
+		    	if (debug) {
+					System.out.println(absoluteTime);
+		    		System.out.println(relativeTime);
+				}
 		    	
 		    	timeMap.put(absoluteTime, index);
 		    	data.add(new DataPoint(relativeTime, lastData));
@@ -89,7 +91,8 @@ public class LogFilePlayer {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	         System.out.println(dp.data);
+			if (dp.data != null)
+				System.out.println(dp.data);
 	     }
 	}
 	
@@ -99,6 +102,8 @@ public class LogFilePlayer {
         Option logFilePathOption = new Option("f", "log_file", true, "path to log file");
         options.addOption(logFilePathOption);
 
+        Option debugOption = new Option("d", "debug", false, "print debug");
+        options.addOption(debugOption);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -115,6 +120,7 @@ public class LogFilePlayer {
         }
 
         logFilePath = cmd.getOptionValue("log_file");
+		debug = cmd.hasOption("debug");
 	}
 	
 	public static class DataPoint {
