@@ -22,7 +22,6 @@ public class LogFilePlayer {
 
 	
 	public static void main(String[] args) {
-		createAndShowGUI();
 		parseCLI(args);
 		
 		File file = new File(logFilePath);
@@ -55,7 +54,7 @@ public class LogFilePlayer {
 				}
 		    	
 		    	timeMap.put(absoluteTime, index);
-		    	data.add(new DataPoint(relativeTime, lastData));
+		    	data.add(new DataPoint(index, relativeTime, lastData, absoluteTime));
 		    	
 		    	lastTime = timeStamp;
 		    	lastData = text;
@@ -79,7 +78,7 @@ public class LogFilePlayer {
 	
     private static void createAndShowGUI() {
         //Create and set up the window.
-        JFrame frame = new JFrame("SliderDemo");
+        JFrame frame = new JFrame("Log File Player");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         UI ui = new UI(timeMap, data);
         

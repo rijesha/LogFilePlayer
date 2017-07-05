@@ -23,6 +23,7 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 	private static ArrayList<DataPoint> data = new  ArrayList<DataPoint>();
 	
 	private static JSlider slider;
+	private static JLabel sliderLabel;
 	
     
     public UI(TreeMap<Long, Integer> timeMap, ArrayList<DataPoint> data) {
@@ -32,30 +33,21 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         //Create the label.
-        JLabel sliderLabel = new JLabel("time", JLabel.CENTER);
+        sliderLabel = new JLabel("Time: ", JLabel.CENTER);
         sliderLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         //Create the slider.
-        slider = new JSlider(JSlider.HORIZONTAL,
-                                              0, 20, FPS_INIT);
-        
+        slider = new JSlider(JSlider.HORIZONTAL, 0, timeMap.size(), FPS_INIT);
 
         slider.addChangeListener(this);
 
         //Turn on labels at major tick marks.
 
-        slider.setMajorTickSpacing(10);
-        slider.setMinorTickSpacing(1);
+        slider.setMajorTickSpacing(7680);
+        slider.setMinorTickSpacing(1280);
         slider.setPaintTicks(true);
         slider.setPaintLabels(true);
-        slider.setBorder(
-                BorderFactory.createEmptyBorder(0,0,10,0));
-       // Font font = new Font("Serif", Font.ITALIC, 15);
-        //framesPerSecond.setFont(font);
-
-        //Create the label that displays the animation.
-   
-        //Put everything together.
+        slider.setBorder(BorderFactory.createEmptyBorder(0,0,10,0));
         add(sliderLabel);
         add(slider);
         startButton.addActionListener(this);
@@ -64,9 +56,6 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 		add(stopButton);
 		
         setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-
-        //Set up a timer that calls this object's action handler.
-     
     }
     
  
@@ -74,9 +63,7 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
     public void stateChanged(ChangeEvent e) {
         JSlider source = (JSlider)e.getSource();
         if (!source.getValueIsAdjusting()) {
-        	
             int fps = (int)source.getValue();
-            System.out.println(fps);
         }
     }
 
@@ -99,16 +86,18 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 	public void run() {
 		while (true) {
 
-	    	Iterator<DataPoint> iter = data.iterator();
 	    	try {
-				Thread.sleep(1000);
+				Thread.sleep(125);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
-			while(iter.hasNext() && slider.isEnabled()) {
-		         DataPoint dp = iter.next();
+			int i = slider.getValue();
+			while(i < data.size() && !slider.isEnabled()) {
+		         DataPoint dp = data.get(i);
+				 slider.setValue(dp.index);
+				 sliderLabel.setText("Time: " + dp.absoluteTime/1000);
 		         try {
 					Thread.sleep((int) dp.time);
 				} catch (InterruptedException e) {
@@ -117,10 +106,9 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 				}
 				if (dp.data != null)
 					System.out.println(dp.data);
+				
+				i++;
 		     }
-			
-			
-			
 		}
 		
 	}
