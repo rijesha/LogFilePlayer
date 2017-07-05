@@ -1,39 +1,32 @@
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.BorderLayout;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 import org.apache.commons.cli.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Random;
 import java.util.TreeMap;
 
 public class LogFilePlayer {
 	private static String logFilePath = "tempPath";
 	private static boolean debug = false;
 	
+	private static TreeMap<Long, Integer> timeMap = new TreeMap<Long, Integer>();
+	private static ArrayList<DataPoint> data = new  ArrayList<DataPoint>();
+
+	
 	public static void main(String[] args) {
+		createAndShowGUI();
 		parseCLI(args);
 		
 		File file = new File(logFilePath);
 		BufferedReader reader = null;
-		
-		TreeMap<Long, Integer> timeMap = new TreeMap<Long, Integer>();
-		ArrayList<DataPoint> data = new  ArrayList<DataPoint>();
 		
 		try {
 			boolean first = true;
@@ -81,20 +74,25 @@ public class LogFilePlayer {
 		    }
 		}
 		
-		Iterator<DataPoint> iter = data.iterator();
-		
-		while(iter.hasNext()) {
-	         DataPoint dp = iter.next();
-	         try {
-				Thread.sleep((int) dp.time);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (dp.data != null)
-				System.out.println(dp.data);
-	     }
+		createAndShowGUI();
 	}
+	
+    private static void createAndShowGUI() {
+        //Create and set up the window.
+        JFrame frame = new JFrame("SliderDemo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        UI ui = new UI(timeMap, data);
+        
+        Thread controlTH = new Thread(ui);
+        controlTH.start();
+
+        //Add content to the window.
+        frame.add(ui, BorderLayout.CENTER);
+
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
+    }
 	
 	private static void parseCLI(String[] args) {
 		Options options = new Options();
@@ -123,41 +121,5 @@ public class LogFilePlayer {
 		debug = cmd.hasOption("debug");
 	}
 	
-	public static class DataPoint {
-		public float time;
-		public String data;
-		public DataPoint(float time, String data){
-			this.time = time;
-			this.data = data;
-		}		
-	}
-
-	
-	private static void newFrame(){
-		JFrame frame = new JFrame("Log File Player -- " + logFilePath);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Container pane = frame.getContentPane();
-		
-        frame.setSize(50, 75);
-		pane.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		
-		c.ipady = 25;      //make this component tall
-		c.ipadx = 25;      //make this component tall
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 0.5;
-		c.weighty = 1;
-		
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.ipady = 1;       //reset to default
-		c.weighty = 1;   //request any extra vertical space
-		c.anchor = GridBagConstraints.PAGE_END; //bottom of space
-		c.gridx = 0;
-		
-		frame.pack();
-		frame.setVisible(true);
-	}
-	
-
 
 }
