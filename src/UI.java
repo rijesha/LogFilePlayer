@@ -7,6 +7,11 @@ import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import java.io.OutputStreamWriter;
+
 
 /*
  * SliderDemo.java requires all the files in the images/doggy
@@ -64,8 +69,27 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
         JSlider source = (JSlider)e.getSource();
         if (!source.getValueIsAdjusting()) {
             int fps = (int)source.getValue();
+			DataPoint dp = data.get(fps);
+			sliderLabel.setText("Time: " + dp.absoluteTime/1000);
         }
     }
+
+	public void sendHTTPRequest(double lat, double lon, double alt) {
+		try {
+			URL url = new URL("http", "127.0.0.1",1919, "null");
+			HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+			httpCon.setDoOutput(true);
+			httpCon.setRequestMethod("PUT");
+			OutputStreamWriter out = new OutputStreamWriter(
+    		httpCon.getOutputStream());
+			String msg = "{\"fillcolor\": \"orange\", \"status\": 0, \"linecolor\": \"yellow\", \"id\": 22, \"shape\": 0, \"msgname\": \"SHAPE\", \"msgclass\": \"ground\", \"radius\": 10, \"lonarr\": [" + (int) (lon*10000000) + ","+ (int) (lon*10000000) +"], \"opacity\": 2, \"latarr\": [" + (int) (lat*10000000) + ","+ (int) (lat*10000000) +"], \"text\": "  + alt + "} ";
+			out.write(msg);
+			out.close();
+			httpCon.getInputStream();		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 
 	@Override
@@ -73,11 +97,8 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 		String command = e.getActionCommand();
 		if (command == "Start" && slider.isEnabled()) {
 			slider.setEnabled(false);
-			System.out.println("Starting");
 		} else if (command == "Stop"){
-
 			slider.setEnabled(true);
-			System.out.println("Stooping");
 		}
 		
 	}
@@ -104,9 +125,13 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if (dp.data != null)
+				if (dp.data != null) {
 					System.out.println(dp.data);
-				
+					if (dp.hasGPS) {
+						sendHTTPRequest(dp.lat, dp.lon, dp.alt);
+					}						
+				}
+					
 				i++;
 		     }
 		}
