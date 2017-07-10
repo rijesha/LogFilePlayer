@@ -120,7 +120,7 @@ public class UI extends JPanel implements ChangeListener, ActionListener, Runnab
 				 slider.setValue(dp.index);
 				 sliderLabel.setText("Time: " + dp.absoluteTime/1000);
 		         try {
-					Thread.sleep((int) dp.time);
+					Thread.sleep((int) dp.time*4);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
